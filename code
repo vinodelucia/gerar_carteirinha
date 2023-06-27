@@ -1,0 +1,55 @@
+from PIL import Image, ImageDraw, ImageFont
+import openpyxl
+
+# Abrir a imagem de fundo
+imagem_de_fundo = Image.open("C:\\Users\\Correção\\Pictures\\NOVA_CARTEIRINHA\\BG\\BG.png")
+
+# Definir a fonte e o tamanho do texto
+fonte_nome_ra = ImageFont.truetype("arial.ttf", 26)
+fonte_emissao_validade = ImageFont.truetype("arial.ttf", 18)
+
+# Definir o caminho do arquivo de planilha
+caminho_arquivo_excel = "C:\\Users\\Correção\\Pictures\\NOVA_CARTEIRINHA\\INFO\\INFO.xlsx"
+
+# Abrir a planilha e selecionar a primeira aba
+planilha = openpyxl.load_workbook(caminho_arquivo_excel)
+aba = planilha.active
+
+# Percorrer as linhas da planilha e criar uma carteirinha para cada aluno
+for linha in aba.iter_rows(min_row=2, values_only=True):
+    # Pegar as informações da linha da planilha
+    nome = linha[0]
+    ra = linha[1]
+    data_validade = linha[2]
+    data_emissao = linha[3]
+    caminho_foto = linha[4]
+
+    try:
+        # Abrir a foto do aluno
+        foto = Image.open(caminho_foto)
+
+        # Redimensionar a foto para o tamanho desejado
+        foto = foto.resize((270, 220))
+
+    except:
+        print(f"Erro ao abrir a imagem: {caminho_foto}")
+        continue
+
+    # Copiar a imagem de fundo para um novo objeto
+    nova_imagem = imagem_de_fundo.copy()
+
+    # Criar o objeto ImageDraw
+    desenho = ImageDraw.Draw(nova_imagem)
+
+    # Desenhar o texto na imagem
+    desenho.text((350, 400), "Nome: " + nome, font=fonte_nome_ra, fill=(0, 0, 0))
+    desenho.text((350, 450), "RA: " + str(ra), font=fonte_nome_ra, fill=(0, 0, 0))
+    desenho.text((350, 525), "Emissão: " + data_emissao.strftime("%d/%m/%Y"), font=fonte_emissao_validade, fill=(0, 0, 0))
+    desenho.text((350, 550), "Validade: " + data_validade.strftime("%d/%m/%Y"), font=fonte_emissao_validade, fill=(0, 0, 0))
+
+    # Colar a foto do aluno na nova imagem
+    nova_imagem.paste(foto, (60, 350))
+
+    # Salvar a imagem com as informações da carteirinha
+    nova_imagem = nova_imagem.convert("RGB")
+    nova_imagem.save(f"C:\\Users\\Correção\\Pictures\\NOVA_CARTEIRINHA\\PRONTA\\{nome}.jpg")
